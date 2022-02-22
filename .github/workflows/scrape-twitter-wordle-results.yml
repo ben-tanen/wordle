@@ -17,7 +17,7 @@ jobs:
       - name: Build Env
         uses: ./.github/actions/build_py_env
         with:
-          requirements: data/setup/caption-scraper-reqs.txt
+          requirements: data/twitter-data/twitter-scrape-reqs.txt
       - name: Build API Creds
         run: >
           printf 'search_tweets_api:\n  account_type: premium\n  endpoint: https://api.twitter.com/2/tweets/search/recent\n  consumer_key: %s\n  consumer_secret: %s\n' '${{ secrets.TWITTER_API_CONSUMER_KEY }}' '${{ secrets.TWITTER_API_CONSUMER_SECRET }}' > data/twitter-data/twitter-api-creds.yaml

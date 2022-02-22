@@ -1,0 +1,30 @@
+name: Scrape Twitter Wordle Reults
+on:
+  schedule:
+      - cron: '0 6 * * *'
+  push:
+
+jobs:
+  scrape-wordle-results:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Build Env
+        uses: ./.github/actions/build_py_env
+        with:
+          requirements: data/setup/caption-scraper-reqs.txt
+      - name: Build API Creds
+        run: >
+          printf 'search_tweets_api:\n  account_type: premium\n  endpoint: https://api.twitter.com/2/tweets/search/recent\n  consumer_key: %s\n  consumer_secret: %s\n' '${{ secrets.TWITTER_API_CONSUMER_KEY }}' '${{ secrets.TWITTER_API_CONSUMER_SECRET }}' > data/twitter-data/twitter-api-creds.yaml
+      - name: Run Twitter Scraper Script
+        run: pipenv run python src/scrape-twitter-wordle-results.py
+      - name: Commit
+        uses: ./.github/actions/commit
+        with:
+          message: new set of scraped tweet data
+          what: data/twitter-data

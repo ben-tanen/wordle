@@ -6,6 +6,7 @@ import searchtweets
 import requests
 import time, os, sys, json, math, re
 import pytz
+import matplotlib.pyplot as plt
 
 #==============================#
 # DEFINE MISC HELPER FUNCTIONS #
@@ -194,6 +195,41 @@ def query_wordle_tweets_v2(details,
     
     return [tweets, trs]   
 
+def plot_tweet_distribution(tweets, details, subtitle = None, bins = None, 
+                            title = "wordle-tweet-distribution-{date}.png".format(date = datetime.now().strftime("%Y%m%d")),
+                            save = True):
+    # pull out time for each tweet
+    times = [tweet['created_at'] for tweet in tweets]
+    times.sort()
+    
+    # calculate as timedeltas from 0000 UTC
+    dt_hours = [(time - details['date']).total_seconds() / (60 * 60) for time in times]
+    
+    # define axis values
+    axis_nums = [x for x in range(-12, 36, 2)]
+    axis_labels = map(lambda x: str(x), axis_nums)
+
+    # define labels + title
+    xlabel = "Hours offset from {date} 00:00 UTC".format(date = details['date'].strftime("%Y-%m-%d"))
+    title_format = "Time distribution of {n_tweets} tweets containing 'Wordle {puzzle}' between {t0} and {t1}"
+    if subtitle:
+        title_format += "\n%s" % subtitle
+    title = title_format.format(n_tweets = len(tweets), puzzle = details['puzzle'],
+                                t0 = details['time_range']['start_time'].strftime("%Y-%m-%d %H:%M UTC"),
+                                t1 = details['time_range']['end_time'].strftime("%Y-%m-%d %H:%M UTC"))
+    
+    # make the plot
+    plt.figure(figsize = (14, 5))
+    plt.xticks(axis_nums, axis_labels)
+    plt.xlim(-12, 36)
+    plt.xlabel(xlabel)
+    plt.hist(dt_hours, bins = bins if bins else math.ceil((times[-1] - times[0]).total_seconds() / (60 * 60)))
+    plt.title(title)
+    if save:
+        plt.savefig("img/%s" % title)
+    else:
+        plt.show()
+
 def get_score(text):
     rms = re.findall(r'ordle {puzzle} ([1-6]|X)/6'.format(puzzle = details['puzzle']), text)
     if len(rms) > 0:
@@ -252,3 +288,8 @@ with open('data/twitter-data/filtered-tweets_wordle-{puzzle}_{date}.json'.format
                                                                                  date = datetime.now().strftime("%Y%m%d")), 
           'w', encoding = 'utf-8') as f:
     json.dump(unclean_tweets(filtered_tweets), f, ensure_ascii = False, indent = 4)
+
+# save image of sampled tweet timing distribution
+plot_tweet_distribution(tweets, details, subtitle = "Based on sampling of tweets in 30-minute increments", 
+                        title = "wordle{puzzle}-tweet-distribution-{date}.png".format(puzzle = details['puzzle'],
+                                                                                      date = datetime.now().strftime("%Y%m%d")))

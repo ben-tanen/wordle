@@ -158,6 +158,7 @@ def query_wordle_tweets_v2(details,
     
     # create array of array of 30-min time ranges
     print("calculating time + probability distributions")
+    offset = details['date'] - get_puzzle_details(puzzle = 244)['date']
     tr = details['time_range']
     trs_init = [tr['start_time'] + timedelta(minutes = dt) for dt in 
                 range(0, int((tr['end_time'] - tr['start_time']).total_seconds() / 60) + 1, min_per_tr)]
@@ -168,8 +169,8 @@ def query_wordle_tweets_v2(details,
             'next_token': None,
             'tweets': 0,
             'probability': len([tweet for tweet in all_tweets_puzzle244 \
-                                if tweet['created_at'] >= t['start_time'] \
-                                and tweet['created_at'] <= t['end_time']]) / \
+                                if tweet['created_at'] + offset >= t['start_time'] \
+                                and tweet['created_at'] + offset <= t['end_time']]) / \
                            len(all_tweets_puzzle244)} for t in trs]
     
     print("starting to query tweets for puzzle %d" % details['puzzle'])
@@ -186,7 +187,7 @@ def query_wordle_tweets_v2(details,
             trs[ix]['next_token'] = next_token
             trs[ix]['tweets'] += len(survey)
             if loud:
-                report_fill(len(tweets), max_tweets, width = 60, num_width = 5, clear = True)
+                report_fill(len(tweets), max_tweets, width = 60, num_width = 5, clear = False)
             if len(tweets) > max_tweets:
                 break       
     print()

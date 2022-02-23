@@ -27,4 +27,4 @@ jobs:
         uses: ./.github/actions/commit
         with:
           message: new set of scraped tweet data
-          what: data/twitter-data
+          what: data/twitter-data img

@@ -196,7 +196,7 @@ def query_wordle_tweets_v2(details,
     return [tweets, trs]   
 
 def plot_tweet_distribution(tweets, details, subtitle = None, bins = None, 
-                            title = "wordle-tweet-distribution-{date}.png".format(date = datetime.now().strftime("%Y%m%d")),
+                            file = "wordle-tweet-distribution-{date}.png".format(date = datetime.now().strftime("%Y%m%d")),
                             save = True):
     # pull out time for each tweet
     times = [tweet['created_at'] for tweet in tweets]
@@ -226,7 +226,7 @@ def plot_tweet_distribution(tweets, details, subtitle = None, bins = None,
     plt.hist(dt_hours, bins = bins if bins else math.ceil((times[-1] - times[0]).total_seconds() / (60 * 60)))
     plt.title(title)
     if save:
-        plt.savefig("img/%s" % title)
+        plt.savefig("img/%s" % file)
     else:
         plt.show()
 
@@ -291,5 +291,5 @@ with open('data/twitter-data/filtered-tweets_wordle-{puzzle}_{date}.json'.format
 
 # save image of sampled tweet timing distribution
 plot_tweet_distribution(tweets, details, subtitle = "Based on sampling of tweets in 30-minute increments", 
-                        title = "wordle{puzzle}-tweet-distribution-{date}.png".format(puzzle = details['puzzle'],
-                                                                                      date = datetime.now().strftime("%Y%m%d")))
+                        file = "wordle{puzzle}-tweet-distribution-{date}.png".format(puzzle = details['puzzle'],
+                                                                                     date = datetime.now().strftime("%Y%m%d")))

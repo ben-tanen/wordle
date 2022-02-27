@@ -254,6 +254,10 @@ filter_fxns = [
                else len(re.findall(seq_regex, t)) == get_score(t))
 ]
 
+def parse_tweet(text):
+    sequences = [text[m.start():m.end()] for m in re.finditer(seq_regex, text)]
+    return '|'.join(sequences)
+
 #================================#
 # QUERY + SAVE TWEETS FOR PUZZLE #
 #================================#
@@ -282,6 +286,10 @@ n_filtered_out_tweets = len(tweets) - len(filtered_tweets)
 print("%d tweets filtered out (%f pct); %d tweets remain" % (n_filtered_out_tweets, 
                                                              n_filtered_out_tweets / len(tweets) * 100,
                                                              len(filtered_tweets)))
+
+# add parsed sequences                                                         
+for tweet in filtered_tweets:
+    tweet.update({'parsed_seq': parse_tweet(tweet['text'])})
 
 # save filtered tweets
 with open('data/twitter-data/filtered-tweets_wordle-{puzzle}_{date}.json'.format(puzzle = details['puzzle'],

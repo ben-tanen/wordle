@@ -4,7 +4,7 @@
 from datetime import datetime, timedelta, timezone
 import searchtweets
 import requests
-import time, os, sys, json, math, re
+import time, os, sys, json, math, re, copy
 import pytz
 import matplotlib.pyplot as plt
 
@@ -87,18 +87,20 @@ def get_puzzle_details(puzzle = None, date = None):
 
 # clean the tweets as needed
 def clean_tweets(tweets):
-    return [{'created_at': pytz.utc.localize(datetime.strptime(tweet['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ")),
-             'id': tweet['id'],
-             'text': re.sub(r'⬜', '⬛', 
-                            re.sub(r'🟦|🟨', '🟨', 
-                                   re.sub(r'🟧', '🟩', tweet['text']))).replace(u"\uFE0F", "")
-            } for tweet in tweets]
+    tweets_copy = [tweet for tweet in copy.deepcopy(tweets)]
+    for tweet in tweets_copy:
+        tweet.update({'created_at': pytz.utc.localize(datetime.strptime(tweet['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ")),
+                      'text': re.sub(r'⬜', '⬛', 
+                                     re.sub(r'🟦|🟨', '🟨', 
+                                            re.sub(r'🟧', '🟩', tweet['text']))).replace(u"\uFE0F", "")})
+    return tweets_copy
 
 # reverse some of the cleaning operations in order to save to .json
 def unclean_tweets(tweets):
-    return [{'created_at': tweet['created_at'].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-             'id': tweet['id'],
-             'text': tweet['text']} for tweet in tweets]
+    tweets_copy = [tweet for tweet in copy.deepcopy(tweets)]
+    for tweet in tweets_copy:
+        tweet.update({'created_at': tweet['created_at'].strftime("%Y-%m-%dT%H:%M:%S.%fZ")})
+    return tweets_copy
 
 # given a mix of parameters, query for wordle puzzle results
 def query_wordle_tweets(details, 

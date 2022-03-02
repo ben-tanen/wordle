@@ -1,8 +1,7 @@
-name: Scrape Twitter Wordle Reults
+name: Scrape Twitter Wordle Results
 on:
   schedule:
       - cron: '0 16 * * *'
-  push:
 
 jobs:
   scrape-wordle-results:
